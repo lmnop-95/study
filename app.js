@@ -266,7 +266,7 @@ function viewKana(n) {
     <h2>발음</h2><div class="card"><ul class="tight">${K.tips.map((t) => `<li>${jp(t)}</li>`).join('')}</ul></div>
     ${K.dakuten ? `<h2>점 두 개, 동그라미</h2><div class="card"><table>${K.dakuten.map(([a, b, c]) => `<tr><td class="muted">${a}</td><td class="jw">${b}</td><td>${c}</td></tr>`).join('')}</table></div>` : ''}
     <h2>쓰기</h2><div class="card"><p>공책에 한 글자당 3번씩, 소리 내면서</p></div>
-    <p><a class="btn" href="#/cards/hira${n}">카드로 복습</a></p>`;
+    <p><a class="btn" href="#/cards/${K.deck}">카드로 복습</a></p>`;
   $app.querySelectorAll('.kana').forEach((el) => el.addEventListener('click', () => play(`audio/kana${n}/k${el.dataset.i}.mp3`)));
   mountComments(`kana${n}`);
 }
@@ -280,6 +280,7 @@ function viewLesson(key) {
       <span><button class="play" id="all">전체 듣기</button> <button class="play" id="allslow">느리게</button></span></div>
       ${L.dialogue.map((d, i) => `<div class="dia ${L.lang === 'ja' ? 'ja' : ''}"><b>${jp(d.who)}</b> ${jp(d.t)} <button class="play mini" onclick="__play('${src(i)}')">듣기</button></div>`).join('')}</div>
     ${L.words ? `<h2>단어</h2><div class="card"><table>${L.words.map(([a, b]) => `<tr><td class="jw small-ja">${jp(a)}</td><td>${esc(b)}</td></tr>`).join('')}</table></div>` : ''}
+    ${L.menu ? `<h2>${esc(L.menuTitle || '메뉴')}</h2><div class="card"><table>${L.menu.map(([a, b]) => `<tr><td class="jw small-ja">${jp(a)}</td><td class="right">${esc(b)}</td></tr>`).join('')}</table></div>` : ''}
     <h2>역할극</h2>
     ${L.tiers.map((t) => `<div class="card"><b>${t.lv}단</b><p class="pre">${jp(t.body)}</p></div>`).join('')}
     <h2>막힐 때</h2>

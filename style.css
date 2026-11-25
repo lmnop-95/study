@@ -75,3 +75,8 @@ th { color: var(--muted); font-weight: 600; }
 ul.tight { padding-left: 20px; margin: 6px 0; }
 ul.tight li { margin: 4px 0; }
 .pre { white-space: pre-wrap; }
+.row.between { justify-content: space-between; }
+.right { text-align: right; }
+.jw { font-size: 22px; }
+.item .progress { margin-top: 8px; }
+a.item { display: block; text-decoration: none; color: inherit; }

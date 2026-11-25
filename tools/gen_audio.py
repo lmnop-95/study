@@ -18,7 +18,7 @@ def pick(base, fallback=None):
         for v in V:
             if v.startswith(base) and tag in v:
                 return v
-    return base if base in V else fallback
+    return next((v for v in V if v == base or v.startswith(base + ' (')), fallback)
 
 JA = pick('Kyoko')
 EN_F = pick('Samantha')

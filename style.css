@@ -84,3 +84,7 @@ a.item { display: block; text-decoration: none; color: inherit; }
 .small-ja { font-size: 17px; }
 .badge.dim { background: var(--line); color: var(--muted); }
 h2 .badge { vertical-align: middle; margin-left: 4px; }
+ruby rt { font-size: .5em; color: var(--muted); font-weight: 400; }
+.dia.ja, .jw, .flash .f, .flash .b, .pre, ul.tight li { line-height: 2.1; }
+.flash .f.big ruby rt { font-size: .32em; }
+.jw ruby rt, .dia.ja ruby rt { font-size: .6em; }

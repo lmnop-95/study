@@ -39,19 +39,24 @@ items = json.loads(subprocess.run(['node', '--input-type=module', '-e',
 
 if ALL and OUT.exists():
     shutil.rmtree(OUT)
+# 글자나 목소리가 바뀐 파일만 다시 만든다 (audio/manifest.json 에 기록)
+MAN = OUT / 'manifest.json'
+man = json.loads(MAN.read_text()) if MAN.exists() else {}
 made = 0
 for it in items:
     path = OUT / it['path']
-    if path.exists():
+    voice = VOICE[(it['lang'], it.get('voice', 'f'))]
+    sig = f"{voice}|{it.get('rate')}|{it['text']}"
+    if path.exists() and man.get(it['path']) == sig:
         continue
     path.parent.mkdir(parents=True, exist_ok=True)
-    voice = VOICE[(it['lang'], it.get('voice', 'f'))]
     with tempfile.NamedTemporaryFile(suffix='.aiff') as t:
         cmd = ['say', '-v', voice, '-o', t.name]
         if it.get('rate'): cmd += ['-r', str(it['rate'])]
         subprocess.run(cmd + [it['text']], check=True)
         subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', t.name, '-ac', '1', '-b:a', '64k', str(path)], check=True)
     made += 1
+    man[it['path']] = sig
 
 # 목록에 없는 옛 파일 지우기
 keep = {OUT / it['path'] for it in items}
@@ -59,4 +64,6 @@ for f in OUT.rglob('*.mp3'):
     if f not in keep: f.unlink()
 for d in sorted(OUT.glob('*'), reverse=True):
     if d.is_dir() and not any(d.iterdir()): d.rmdir()
+man = {k: v for k, v in man.items() if OUT / k in keep}
+MAN.write_text(json.dumps(man, ensure_ascii=False, indent=0, sort_keys=True))
 print(f'made {made}, total {len(items)}')

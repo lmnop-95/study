@@ -20,6 +20,7 @@ const enc = encodeURIComponent;
 // 도구
 const $app = document.getElementById('app');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const jp = (s) => esc(s).replace(/\{([^|}]+)\|([^}]+)\}/g, '<ruby>$1<rt>$2</rt></ruby>'); // 한자 위 후리가나
 function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2000); }
 const todayKST = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const addDays = (d, n) => { const x = new Date(d + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
@@ -260,9 +261,9 @@ function viewKana(n) {
     <p class="muted">누르면 소리 나옴</p>
     <div class="kana-grid">${K.list.map((x, i) => `<div class="kana" data-i="${i}"><div class="k">${x.k}</div><div class="s">${x.s}</div></div>`).join('')}</div>
     <h2>단어</h2>
-    <div class="card"><table>${K.list.map((x, i) => `<tr><td class="jw">${x.w}</td><td>${esc(x.m)}</td>
+    <div class="card"><table>${K.list.map((x, i) => `<tr><td class="jw">${jp(x.w)}</td><td>${esc(x.m)}</td>
       <td class="right"><button class="play" onclick="__play('audio/kana${n}/w${i}.mp3')">듣기</button> <button class="play" onclick="__play('audio/kana${n}/w${i}.mp3', true)">느리게</button></td></tr>`).join('')}</table></div>
-    <h2>발음</h2><div class="card"><ul class="tight">${K.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <h2>발음</h2><div class="card"><ul class="tight">${K.tips.map((t) => `<li>${jp(t)}</li>`).join('')}</ul></div>
     ${K.dakuten ? `<h2>점 두 개, 동그라미</h2><div class="card"><table>${K.dakuten.map(([a, b, c]) => `<tr><td class="muted">${a}</td><td class="jw">${b}</td><td>${c}</td></tr>`).join('')}</table></div>` : ''}
     <h2>쓰기</h2><div class="card"><p>공책에 한 글자당 3번씩, 소리 내면서</p></div>
     <p><a class="btn" href="#/cards/hira${n}">카드로 복습</a></p>`;
@@ -277,12 +278,12 @@ function viewLesson(key) {
   $app.innerHTML = `<h1>${esc(L.title)}</h1>
     <div class="card"><div class="row between"><b>대화문</b>
       <span><button class="play" id="all">전체 듣기</button> <button class="play" id="allslow">느리게</button></span></div>
-      ${L.dialogue.map((d, i) => `<div class="dia ${L.lang === 'ja' ? 'ja' : ''}"><b>${esc(d.who)}</b> ${esc(d.t)} <button class="play mini" onclick="__play('${src(i)}')">듣기</button></div>`).join('')}</div>
-    ${L.words ? `<h2>단어</h2><div class="card"><table>${L.words.map(([a, b]) => `<tr><td class="jw small-ja">${esc(a)}</td><td>${esc(b)}</td></tr>`).join('')}</table></div>` : ''}
+      ${L.dialogue.map((d, i) => `<div class="dia ${L.lang === 'ja' ? 'ja' : ''}"><b>${jp(d.who)}</b> ${jp(d.t)} <button class="play mini" onclick="__play('${src(i)}')">듣기</button></div>`).join('')}</div>
+    ${L.words ? `<h2>단어</h2><div class="card"><table>${L.words.map(([a, b]) => `<tr><td class="jw small-ja">${jp(a)}</td><td>${esc(b)}</td></tr>`).join('')}</table></div>` : ''}
     <h2>역할극</h2>
-    ${L.tiers.map((t) => `<div class="card"><b>${t.lv}단</b><p class="pre">${esc(t.body)}</p></div>`).join('')}
+    ${L.tiers.map((t) => `<div class="card"><b>${t.lv}단</b><p class="pre">${jp(t.body)}</p></div>`).join('')}
     <h2>막힐 때</h2>
-    <div class="card"><ul class="tight">${L.help.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></div>
+    <div class="card"><ul class="tight">${L.help.map((h) => `<li>${jp(h)}</li>`).join('')}</ul></div>
     <p><a class="btn" href="#/cards/${L.deck}">카드로 복습</a></p>`;
   const seq = async (slow) => { for (let i = 0; i < L.dialogue.length; i++) { await new Promise((res) => { play(src(i), slow); audioNow.onended = res; audioNow.onerror = res; }); } };
   document.getElementById('all').addEventListener('click', () => seq(false));
@@ -332,8 +333,8 @@ async function viewDeck(key) {
     if (!queue.length) return finish();
     const c = queue[0];
     $app.innerHTML = `<h1>${esc(D.title)}</h1><p class="muted small">${practice ? '연습, ' : ''}남은 카드 ${queue.length}</p>
-      <div class="card flash"><div class="f ${c.big ? 'big' : ''}">${esc(c.f)}</div><div id="back" hidden><div class="b">${esc(c.b)}</div>
-      ${c.ex ? `<div class="muted">${esc(c.ex)}</div>` : ''}
+      <div class="card flash"><div class="f ${c.big ? 'big' : ''}">${jp(c.f)}</div><div id="back" hidden><div class="b">${jp(c.b)}</div>
+      ${c.ex ? `<div class="muted">${jp(c.ex)}</div>` : ''}
       <p><button class="play" id="pl">듣기</button> <button class="play" id="ps">느리게</button></p></div>
       <p id="flipw"><button class="primary" id="flip">뒤집기</button></p>
       <div class="grade" id="grade" hidden><button data-g="0">모름</button><button data-g="1">애매</button><button data-g="2">앎</button></div></div>`;

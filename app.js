@@ -1,4 +1,4 @@
-import { SITE, WEEKS, DIAG, KANA1, KANA_TIPS, EN1, DECKS, PAGES } from './content.js';
+import { SITE, WEEKS, DIAG, KANA, LESSONS, CLASSES, DECKS, PAGES } from './content.js';
 
 // 서버 연결 (Supabase). 공개용 키라 쓰기는 비밀번호 확인 함수로만 된다.
 const URL_ = 'https://yptxfuafkzdipvvnnxte.supabase.co';
@@ -76,7 +76,13 @@ function pinStep(m) {
 }
 
 // 댓글
-const PAGE_TITLE = { rules: '규칙', diagnosis: '수준 진단', kana1: '히라가나 1주차', english1: '영어 1주차', cards: '단어카드', homework: '숙제' };
+const PAGE_TITLE = {
+  rules: '규칙', diagnosis: '수준 진단', cards: '단어카드', homework: '숙제',
+  ...Object.fromEntries(Object.entries(KANA).map(([n, K]) => [`kana${n}`, K.title])),
+  ...Object.fromEntries(Object.entries(LESSONS).map(([k, L]) => [`lesson-${k}`, L.title])),
+  ...Object.fromEntries(Object.entries(CLASSES).map(([n, C]) => [`class${n}`, C.title])),
+};
+const PAGE_HREF = (p) => p.replace(/^kana(\d+)$/, 'kana/$1').replace(/^lesson-/, 'lesson/').replace(/^class(\d+)$/, 'class/$1');
 async function mountComments(page) {
   const wrap = document.createElement('section');
   wrap.innerHTML = `<h2>댓글</h2><div class="card"><div id="clist" class="small"></div>
@@ -169,7 +175,7 @@ async function viewHome() {
       <div class="row between"><b>이번 주 숙제</b><span class="badge ${n === W.items.length ? 'ok' : ''}">${n}/${W.items.length}</span></div>
       <div class="progress"><div style="width:${(n / W.items.length) * 100}%"></div></div></a>
     ${fresh.length ? `<div class="card"><div class="row between"><b>새 댓글 ${fresh.length}</b><button class="mini" id="seen">읽음</button></div>
-      ${fresh.slice(0, 5).map((c) => `<div class="comment"><div class="meta">${esc(c.name)}, <a href="#/${c.page}">${esc(PAGE_TITLE[c.page] || c.page)}</a>, ${fmtTime(c.created_at)}</div><p>${esc(c.body.slice(0, 120))}</p></div>`).join('')}</div>` : ''}
+      ${fresh.slice(0, 5).map((c) => `<div class="comment"><div class="meta">${esc(c.name)}, <a href="#/${PAGE_HREF(c.page)}">${esc(PAGE_TITLE[c.page] || c.page)}</a>, ${fmtTime(c.created_at)}</div><p>${esc(c.body.slice(0, 120))}</p></div>`).join('')}</div>` : ''}
     <div class="list">${PAGES.map((p) => `<a class="item" href="${p.href}"><b>${esc(p.title)}</b></a>`).join('')}
     ${isHost() ? '<a class="item" href="#/admin"><b>관리</b></a>' : ''}</div>`;
   document.getElementById('seen')?.addEventListener('click', () => { localStorage.setItem('study_seen', new Date().toISOString()); viewHome(); });
@@ -238,36 +244,52 @@ async function viewDiagnosis() {
   mountComments('diagnosis');
 }
 
-// 히라가나 1주차
-function viewKana1() {
-  $app.innerHTML = `<h1>히라가나 1주차</h1>
+// 히라가나
+function viewKana(n) {
+  const K = KANA[n]; if (!K) return viewHome();
+  $app.innerHTML = `<h1>${esc(K.title)}</h1>
     <p class="muted">누르면 소리 나옴</p>
-    <div class="kana-grid">${KANA1.map((x, i) => `<div class="kana" data-i="${i}"><div class="k">${x.k}</div><div class="s">${x.s}</div></div>`).join('')}</div>
+    <div class="kana-grid">${K.list.map((x, i) => `<div class="kana" data-i="${i}"><div class="k">${x.k}</div><div class="s">${x.s}</div></div>`).join('')}</div>
     <h2>단어</h2>
-    <div class="card"><table>${KANA1.map((x, i) => `<tr><td class="jw">${x.w}</td><td>${esc(x.m)}</td>
-      <td class="right"><button class="play" onclick="__play('audio/ja/w${i}.mp3')">듣기</button> <button class="play" onclick="__play('audio/ja/w${i}.mp3', true)">느리게</button></td></tr>`).join('')}</table></div>
-    <h2>발음</h2><div class="card"><ul class="tight">${KANA_TIPS.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <div class="card"><table>${K.list.map((x, i) => `<tr><td class="jw">${x.w}</td><td>${esc(x.m)}</td>
+      <td class="right"><button class="play" onclick="__play('audio/kana${n}/w${i}.mp3')">듣기</button> <button class="play" onclick="__play('audio/kana${n}/w${i}.mp3', true)">느리게</button></td></tr>`).join('')}</table></div>
+    <h2>발음</h2><div class="card"><ul class="tight">${K.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    ${K.dakuten ? `<h2>점 두 개, 동그라미</h2><div class="card"><table>${K.dakuten.map(([a, b, c]) => `<tr><td class="muted">${a}</td><td class="jw">${b}</td><td>${c}</td></tr>`).join('')}</table></div>` : ''}
     <h2>쓰기</h2><div class="card"><p>공책에 한 글자당 3번씩, 소리 내면서</p></div>
-    <p><a class="btn" href="#/cards/hira1">카드로 복습</a></p>`;
-  $app.querySelectorAll('.kana').forEach((el) => el.addEventListener('click', () => play(`audio/ja/k${el.dataset.i}.mp3`)));
-  mountComments('kana1');
+    <p><a class="btn" href="#/cards/hira${n}">카드로 복습</a></p>`;
+  $app.querySelectorAll('.kana').forEach((el) => el.addEventListener('click', () => play(`audio/kana${n}/k${el.dataset.i}.mp3`)));
+  mountComments(`kana${n}`);
 }
 
-// 영어 1주차
-function viewEnglish1() {
-  $app.innerHTML = `<h1>영어 1주차</h1>
+// 대화문 수업
+function viewLesson(key) {
+  const L = LESSONS[key]; if (!L) return viewHome();
+  const src = (i) => `audio/lesson-${key}/d${i}.mp3`;
+  $app.innerHTML = `<h1>${esc(L.title)}</h1>
     <div class="card"><div class="row between"><b>대화문</b>
       <span><button class="play" id="all">전체 듣기</button> <button class="play" id="allslow">느리게</button></span></div>
-      ${EN1.dialogue.map((d, i) => `<div class="dia"><b>${d.who}</b> ${esc(d.t)} <button class="play mini" onclick="__play('audio/en/d${i}.mp3')">듣기</button></div>`).join('')}</div>
+      ${L.dialogue.map((d, i) => `<div class="dia ${L.lang === 'ja' ? 'ja' : ''}"><b>${esc(d.who)}</b> ${esc(d.t)} <button class="play mini" onclick="__play('${src(i)}')">듣기</button></div>`).join('')}</div>
+    ${L.words ? `<h2>단어</h2><div class="card"><table>${L.words.map(([a, b]) => `<tr><td class="jw small-ja">${esc(a)}</td><td>${esc(b)}</td></tr>`).join('')}</table></div>` : ''}
     <h2>역할극</h2>
-    ${EN1.tiers.map((t) => `<div class="card"><b>${t.lv}단</b><p class="pre">${esc(t.body)}</p></div>`).join('')}
+    ${L.tiers.map((t) => `<div class="card"><b>${t.lv}단</b><p class="pre">${esc(t.body)}</p></div>`).join('')}
     <h2>막힐 때</h2>
-    <div class="card"><ul class="tight">${EN1.help.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></div>
-    <p><a class="btn" href="#/cards/en1">카드로 복습</a></p>`;
-  const seq = async (slow) => { for (let i = 0; i < EN1.dialogue.length; i++) { await new Promise((res) => { play(`audio/en/d${i}.mp3`, slow); audioNow.onended = res; audioNow.onerror = res; }); } };
+    <div class="card"><ul class="tight">${L.help.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></div>
+    <p><a class="btn" href="#/cards/${L.deck}">카드로 복습</a></p>`;
+  const seq = async (slow) => { for (let i = 0; i < L.dialogue.length; i++) { await new Promise((res) => { play(src(i), slow); audioNow.onended = res; audioNow.onerror = res; }); } };
   document.getElementById('all').addEventListener('click', () => seq(false));
   document.getElementById('allslow').addEventListener('click', () => seq(true));
-  mountComments('english1');
+  mountComments(`lesson-${key}`);
+}
+
+// 수업 진행표
+function viewClass(n) {
+  const C = CLASSES[n]; if (!C) return viewHome();
+  $app.innerHTML = `<h1>${esc(C.title)}</h1>
+    <p class="muted">${md(C.date)} (수) 밤 9시</p>
+    ${C.parts.map((p) => `<div class="card"><div class="row between"><b>${esc(p.name)}</b><span class="small muted">${esc(p.topic)}</span></div>
+      <table>${p.rows.map(([t, d]) => `<tr><td class="small muted" style="white-space:nowrap">${t}분</td><td>${esc(d)}</td></tr>`).join('')}</table>
+      <p>${p.links.map(([l, h]) => `<a class="btn" href="${h}">${esc(l)}</a>`).join(' ')}</p></div>`).join('')}`;
+  mountComments(`class${n}`);
 }
 
 // 단어카드 (간격 복습)
@@ -402,8 +424,9 @@ async function route() {
     const [p, a] = location.hash.replace(/^#\/?/, '').split('/');
     if (p === 'rules') return viewRules();
     if (p === 'diagnosis') return await viewDiagnosis();
-    if (p === 'kana1') return viewKana1();
-    if (p === 'english1') return viewEnglish1();
+    if (p === 'kana') return viewKana(a);
+    if (p === 'lesson') return viewLesson(a);
+    if (p === 'class') return viewClass(a);
     if (p === 'cards') return a ? await viewDeck(a) : await viewCards();
     if (p === 'homework') return await viewHomework();
     if (p === 'admin') return await viewAdmin();

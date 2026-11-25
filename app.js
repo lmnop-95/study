@@ -121,8 +121,8 @@ async function autoCheck(key) {
   if (it) { await setHW(w, it.id, true); toast(`숙제 체크: ${it.text}`); }
 }
 
-async function viewHomework() {
-  const w = currentWeek(); const W = WEEKS[w];
+async function viewHomework(wk) {
+  const w = WEEKS[wk] ? wk : currentWeek(); const W = WEEKS[w];
   const done = await myDone(w);
   const req = W.items; const n = req.filter((i) => done.has(i.id)).length;
   $app.innerHTML = `
@@ -170,12 +170,21 @@ async function viewHome() {
   const last = localStorage.getItem('study_seen') || '1970-01-01';
   const recent = await sel('comments', 'select=id,page,name,body,created_at&order=created_at.desc&limit=20');
   const fresh = recent.filter((c) => c.created_at > last && c.name !== me.name);
+  // 이번 주, 다음 주들, 지난 주들 순서
+  const ks = weekKeys();
+  const order = [w, ...ks.filter((k) => k > w), ...ks.filter((k) => k < w).reverse()];
+  const weekBlock = (k, cnt) => {
+    const W2 = WEEKS[k]; const tag = k === w ? '이번 주' : k > w ? '다음' : '지난';
+    return `<h2>${md(k)} ${esc(W2.title)} <span class="badge ${k === w ? '' : 'dim'}">${tag}</span></h2>
+      <div class="list"><a class="item" href="#/homework/${k}"><div class="row between"><b>숙제</b>${cnt != null ? `<span class="badge ${cnt === W2.items.length ? 'ok' : ''}">${cnt}/${W2.items.length}</span>` : ''}</div>
+      ${cnt != null ? `<div class="progress"><div style="width:${(cnt / W2.items.length) * 100}%"></div></div>` : ''}</a>
+      ${(W2.pages || []).map((p) => `<a class="item" href="${p.href}"><b>${esc(p.title)}</b></a>`).join('')}</div>`;
+  };
   $app.innerHTML = `
-    <a class="item" href="#/homework">
-      <div class="row between"><b>이번 주 숙제</b><span class="badge ${n === W.items.length ? 'ok' : ''}">${n}/${W.items.length}</span></div>
-      <div class="progress"><div style="width:${(n / W.items.length) * 100}%"></div></div></a>
     ${fresh.length ? `<div class="card"><div class="row between"><b>새 댓글 ${fresh.length}</b><button class="mini" id="seen">읽음</button></div>
       ${fresh.slice(0, 5).map((c) => `<div class="comment"><div class="meta">${esc(c.name)}, <a href="#/${PAGE_HREF(c.page)}">${esc(PAGE_TITLE[c.page] || c.page)}</a>, ${fmtTime(c.created_at)}</div><p>${esc(c.body.slice(0, 120))}</p></div>`).join('')}</div>` : ''}
+    ${order.map((k) => weekBlock(k, k === w ? n : null)).join('')}
+    <h2>공통</h2>
     <div class="list">${PAGES.map((p) => `<a class="item" href="${p.href}"><b>${esc(p.title)}</b></a>`).join('')}
     ${isHost() ? '<a class="item" href="#/admin"><b>관리</b></a>' : ''}</div>`;
   document.getElementById('seen')?.addEventListener('click', () => { localStorage.setItem('study_seen', new Date().toISOString()); viewHome(); });
@@ -428,7 +437,7 @@ async function route() {
     if (p === 'lesson') return viewLesson(a);
     if (p === 'class') return viewClass(a);
     if (p === 'cards') return a ? await viewDeck(a) : await viewCards();
-    if (p === 'homework') return await viewHomework();
+    if (p === 'homework') return await viewHomework(a);
     if (p === 'admin') return await viewAdmin();
     return await viewHome();
   } catch (e) {

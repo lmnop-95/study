@@ -281,6 +281,11 @@ export const CLASSES = {
 export const WEEKS = {
   '2026-11-25': {
     title: '0주차',
+    pages: [
+      { href: '#/diagnosis', title: '수준 진단, 시작 녹음' },
+      { href: '#/kana/1', title: '히라가나 1 (あ~の)' },
+      { href: '#/lesson/en1', title: '영어: 자기소개' },
+    ],
     items: [
       { id: 'diag', text: '수준 진단', min: 5, link: '#/diagnosis', auto: 'diag' },
       { id: 'rec', text: '시작 녹음 (일본어, 영어)', min: 10, link: '#/diagnosis' },
@@ -298,6 +303,12 @@ export const WEEKS = {
   },
   '2026-12-02': {
     title: '1주차',
+    pages: [
+      { href: '#/class/1', title: '수업 진행표' },
+      { href: '#/kana/2', title: '히라가나 2 (は~ん)' },
+      { href: '#/lesson/ja1', title: '일본어: 자기소개' },
+      { href: '#/lesson/en2', title: '영어: 취미' },
+    ],
     items: [
       { id: 'kana2-read', text: 'は~ん 소리 내서 읽기', min: 15, link: '#/kana/2' },
       { id: 'kana2-write', text: 'は~ん 공책에 3번씩 쓰기', min: 15, link: '#/kana/2' },
@@ -357,17 +368,9 @@ export const DIAG = {
   ],
 };
 
-// 첫 화면 목록 (위에서부터)
+// 첫 화면 맨 아래 공통 목록
 export const PAGES = [
-  { href: '#/class/1', title: '1주차 수업 (12/2)' },
-  { href: '#/homework', title: '숙제' },
-  { href: '#/kana/2', title: '히라가나 2 (は~ん)' },
-  { href: '#/lesson/ja1', title: '일본어: 자기소개' },
-  { href: '#/lesson/en2', title: '영어: 취미' },
   { href: '#/cards', title: '단어카드' },
-  { href: '#/kana/1', title: '히라가나 1 (あ~の)' },
-  { href: '#/lesson/en1', title: '영어: 자기소개' },
-  { href: '#/diagnosis', title: '수준 진단, 시작 녹음' },
   { href: '#/rules', title: '규칙' },
 ];
 

@@ -82,3 +82,5 @@ ul.tight li { margin: 4px 0; }
 a.item { display: block; text-decoration: none; color: inherit; }
 .dia.ja { font-size: 18px; }
 .small-ja { font-size: 17px; }
+.badge.dim { background: var(--line); color: var(--muted); }
+h2 .badge { vertical-align: middle; margin-left: 4px; }

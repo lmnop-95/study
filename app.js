@@ -180,14 +180,9 @@ function viewRules() {
   const host = esc(hostName());
   $app.innerHTML = `
     <h1>규칙</h1>
-    <div class="card"><h3>목표</h3><ul class="tight">
-      <li>일본어: 3개월 가나 다 읽기, 6개월 주문하고 길 묻기, 1년 여행 회화, 2년 JLPT N5 합격</li>
-      <li>영어: 1년마다 말하기, 듣기 한 단계씩</li></ul></div>
     <div class="card"><h3>모임</h3><ul class="tight">
       <li>${esc(SITE.meet)}</li>
-      <li>일본어 27분, 영어 27분. 어느 쪽 먼저 할지는 주마다 바꿈</li>
-      <li>역할극은 2~3명씩 방 나눠서</li>
-      <li>따라 읽을 땐 각자 음소거</li>
+      <li>일본어 40분, 영어 20분</li>
       <li>피드백은 끝나고, 잘한 거 하나 고칠 거 하나</li>
       <li>다섯째 수요일은 쉼</li>
       <li>빠지면 그냥 다음 주에 오기</li></ul></div>
@@ -196,17 +191,15 @@ function viewRules() {
       <li>1단 문장 그대로, 2단 이유랑 질문 붙이기, 3단 돌발 상황</li>
       <li>3단은 역할극에서 점원, 친구 역</li></ul></div>
     <div class="card"><h3>숙제</h3><ul class="tight">
-      <li>일주일에 1시간쯤. 수요일마다 새로 올라옴</li>
+      <li>일주일에 2시간쯤. 수요일마다 새로 올라옴</li>
       <li>추가 숙제는 점수 없음</li>
       <li>밀린 건 안 해도 됨. 이번 주 것만</li></ul></div>
-    <div class="card"><h3>퀴즈, 피자</h3><ul class="tight">
+    <div class="card"><h3>퀴즈</h3><ul class="tight">
       <li>매달 넷째 주 디스코드에 올라옴. 15분 안에 혼자 풀고 답은 ${host}한테 DM</li>
       <li>그달 배운 것만, 일본어 영어 반반</li>
       <li>문제 80점 + 그달 숙제 20점</li>
-      <li>1등 피자. 대신 다음 달은 피자 없음</li>
-      <li>동점이면 숙제 더 한 사람</li>
-      <li>${host}은 같이 풀지만 피자 없음</li>
-      <li>발표는 다음 달 첫 모임</li></ul></div>
+      <li>1등 피자</li>
+      <li>동점이면 사다리타기</li></ul></div>
     <div class="card"><h3>녹음</h3><ul class="tight">
       <li>시작, 3개월, 6개월, 1년, 2년에 같은 질문으로 녹음</li>
       <li>각자 폰에만 저장</li></ul></div>`;
@@ -355,9 +348,11 @@ async function standings(month, by) {
     return { name: m.name, q, rate, total: q == null ? null : q + Math.round(rate * 20) };
   });
 }
-const prevMonth = (m) => { const [y, mm] = m.split('-').map(Number); return mm === 1 ? `${y - 1}-12` : `${y}-${String(mm - 1).padStart(2, '0')}`; };
-const winnerOf = (rows, excluded) => rows.filter((r) => r.total != null && !excluded.includes(r.name))
-  .sort((a, b) => b.total - a.total || b.rate - a.rate)[0]?.name;
+function winnersOf(rows, excluded) {
+  const ok = rows.filter((r) => r.total != null && !excluded.includes(r.name));
+  const top = Math.max(...ok.map((r) => r.total));
+  return ok.filter((r) => r.total === top).map((r) => r.name);
+}
 
 async function viewAdmin() {
   members = await rpc('list_members');
@@ -365,17 +360,16 @@ async function viewAdmin() {
   const by = await teamData();
   const months = monthsSoFar(); const month = viewAdmin.month || months[months.length - 1];
   const rows = await standings(month, by);
-  const prevRows = month > SITE.firstQuizMonth ? await standings(prevMonth(month), by) : [];
-  const prevWinner = winnerOf(prevRows, [hostName()]);
-  const excluded = [hostName(), prevWinner].filter(Boolean);
-  const win = winnerOf(rows, excluded);
+  const excluded = [hostName()];
+  const wins = winnersOf(rows, excluded);
+  const tie = wins.length > 1;
   const diag = await sel('diagnosis', 'select=name,lang,level');
   const lv = {}; diag.forEach((d) => ((lv[d.name] ||= {})[d.lang] = d.level));
   $app.innerHTML = `<h1>관리</h1>
     <h2>퀴즈</h2>
     <div class="card"><select id="month" style="width:auto">${months.map((m) => `<option ${m === month ? 'selected' : ''}>${m}</option>`).join('')}</select>
       <table style="margin-top:10px"><tr><th></th><th>문제 (80)</th><th>숙제 (20)</th><th>합계</th></tr>
-      ${rows.map((r) => `<tr><td>${esc(r.name)}${r.name === win ? ' <span class="badge ok">피자</span>' : ''}${excluded.includes(r.name) ? ' <span class="small muted">제외</span>' : ''}</td>
+      ${rows.map((r) => `<tr><td>${esc(r.name)}${wins.includes(r.name) ? ` <span class="badge ok">${tie ? '동점, 사다리' : '피자'}</span>` : ''}${excluded.includes(r.name) ? ' <span class="small muted">제외</span>' : ''}</td>
         <td><input type="number" min="0" max="80" value="${r.q ?? ''}" data-q="${esc(r.name)}" style="width:80px;padding:6px"></td>
         <td>${Math.round(r.rate * 20)}</td><td><b>${r.total ?? ''}</b></td></tr>`).join('')}</table>
       <p><button class="primary" id="saveq">저장</button></p></div>

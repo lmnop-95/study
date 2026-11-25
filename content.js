@@ -13,14 +13,14 @@ export const WEEKS = {
     items: [
       { id: 'diag', text: '수준 진단', min: 5, link: '#/diagnosis', auto: 'diag' },
       { id: 'rec', text: '시작 녹음 (일본어, 영어)', min: 10, link: '#/diagnosis' },
-      { id: 'kana-read', text: 'あ~そ 소리 내서 읽기', min: 10, link: '#/kana1' },
-      { id: 'kana-write', text: 'あ~そ 공책에 3번씩 쓰기', min: 10, link: '#/kana1' },
-      { id: 'cards-ja', text: '히라가나 카드 1회', min: 10, link: '#/cards/hira1', auto: 'cards:hira1' },
+      { id: 'kana-read', text: 'あ~の 소리 내서 읽기', min: 15, link: '#/kana1' },
+      { id: 'kana-write', text: 'あ~の 공책에 3번씩 쓰기', min: 15, link: '#/kana1' },
+      { id: 'cards-ja', text: '히라가나 카드 1회', min: 20, link: '#/cards/hira1', auto: 'cards:hira1' },
+      { id: 'anime', text: '애니 한 편 일본어 음성으로 보기', min: 25 },
       { id: 'cards-en', text: '영어 카드 1회', min: 10, link: '#/cards/en1', auto: 'cards:en1' },
-      { id: 'en-say', text: '영어 대화문 내 얘기로 바꿔서 3번 말하기', min: 5, link: '#/english1' },
+      { id: 'en-say', text: '영어 대화문 내 얘기로 바꿔서 3번 말하기', min: 10, link: '#/english1' },
     ],
     extras: [
-      { id: 'x-anime', text: '애니 한 편 일본어 음성으로 보기' },
       { id: 'x-song', text: '영어 노래 한 곡 따라 부르기' },
       { id: 'x-cards', text: '카드 한 번 더' },
     ],
@@ -84,12 +84,23 @@ export const KANA1 = [
   { k: 'す', s: '스', w: 'すし', m: '초밥' },
   { k: 'せ', s: '세', w: 'せかい', m: '세계' },
   { k: 'そ', s: '소', w: 'うそ', m: '거짓말' },
+  { k: 'た', s: '타', w: 'たこ', m: '문어' },
+  { k: 'ち', s: '치', w: 'ちかてつ', m: '지하철' },
+  { k: 'つ', s: '츠', w: 'つくえ', m: '책상' },
+  { k: 'て', s: '테', w: 'て', m: '손' },
+  { k: 'と', s: '토', w: 'とけい', m: '시계' },
+  { k: 'な', s: '나', w: 'なつ', m: '여름' },
+  { k: 'に', s: '니', w: 'にく', m: '고기' },
+  { k: 'ぬ', s: '누', w: 'いぬ', m: '개' },
+  { k: 'ね', s: '네', w: 'ねこ', m: '고양이' },
+  { k: 'の', s: '노', w: 'きのこ', m: '버섯' },
 ];
 
 export const KANA_TIPS = [
   'う, す 는 입술 내밀지 말고 짧게',
-  'か행은 단어 첫 글자면 카와 가 사이, 가운데 오면 까에 가깝게 들림',
-  '헷갈리는 짝: い こ / き さ',
+  'か행, た행은 단어 첫 글자면 카/가, 타/다 사이. 가운데 오면 까, 따에 가깝게 들림',
+  'つ 는 츠와 쯔 사이',
+  '헷갈리는 짝: い こ / き さ / ち さ / ぬ め(다음 주) / ね れ(나중에)',
 ];
 
 export const EN1 = {

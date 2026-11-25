@@ -325,10 +325,9 @@ async function viewDeck(key) {
   let queue = shuffle(D.cards.filter((c) => !prog[c.id] || prog[c.id].due <= t));
   let practice = false;
   const finish = async () => {
-    $app.innerHTML = `<h1>${esc(D.title)}</h1><div class="card flash"><div class="f">끝</div>
-      <p><button id="again">한 번 더</button> <a class="btn" href="#/cards">목록</a></p></div>`;
-    document.getElementById('again').addEventListener('click', () => { practice = true; queue = shuffle([...D.cards]); next(); });
-    await autoCheck(`cards:${key}`);
+    toast('끝');
+    try { await autoCheck(`cards:${key}`); } catch (e) { console.error(e); }
+    location.hash = '#/';
   };
   const next = () => {
     if (!queue.length) return finish();

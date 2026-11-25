@@ -93,7 +93,7 @@ export const LESSONS = {
   ja1: {
     title: '일본어: 자기소개',
     lang: 'ja',
-    voices: {},
+    voices: { 'たなか': 'm' },
     dialogue: [
       { who: 'たなか', t: 'こんにちは。はじめまして。たなかです。' },
       { who: 'キム', t: 'はじめまして。キムです。かんこくから きました。' },
